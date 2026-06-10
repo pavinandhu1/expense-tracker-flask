@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Expense Tracker</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+
+        body {
+
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #eef2f3, #dfe9f3);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+
+    max-width: 1000px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+h2 {
+
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.form {
+
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.form input,
+.form select {
+
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+.form input:focus,
+.form select:focus {
+
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 8px rgba(76,175,80,0.3);
+}
+
+.form button {
+
+    background: linear-gradient(
+        to right,
+        #4CAF50,
+        #45a049
+    );
+
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.form button:hover {
+
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.top-section {
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.total {
+
+    font-size: 28px;
+    font-weight: bold;
+    color: #222;
+}
+
+.chart-box {
+
+    width: 320px;
+    height: 320px;
+    padding: 15px;
+    border-radius: 20px;
+    background: #fafafa;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+table {
+
+    width: 100%;
+    margin-top: 30px;
+    border-collapse: collapse;
+    overflow: hidden;
+    border-radius: 15px;
+}
+
+th {
+
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    font-size: 16px;
+}
+
+td {
+
+    padding: 14px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+tr:hover {
+
+    background: #f9f9f9;
+}
+
+.delete {
+
+    background: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete:hover {
+
+    background: #e60000;
+}
+
+.edit-btn {
+
+    background: #43703e;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-left: 5px;
+    transition: 0.3s;
+}
+
+.edit-btn:hover {
+
+    opacity: 0.8;
+}
+
+.warning {
+
+    background: #ffe5e5;
+    color: #d8000c;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+    text-align: center;
+}
+
+@media (max-width:768px) {
+
+    .top-section {
+
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form {
+
+        flex-direction: column;
+    }
+
+    .form input,
+    .form select,
+    .form button {
+
+        width: 100%;
+    }
+
+    .chart-box {
+
+        width: 100%;
+        height: auto;
+    }
+
+    .total {
+
+        font-size: 22px;
+    }
+}
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>💰 Expense Tracker</h2>
+
+    <!-- ADD EXPENSE FORM -->
+
+    <form method="POST" class="form">
+
+        <input id="expense"
+            type="text"
+            name="expense"
+            placeholder="Expense"
+        >
+
+        <input id="amount"
+            type="number"
+            name="amount"
+            placeholder="Amount"
+        >
+
+        <select name="category">
+
+            <option>Food</option>
+
+            <option>Travel</option>
+
+            <option>Shopping</option>
+
+            <option>Medical</option>
+
+        </select>
+
+        <button id="btn">Add</button>
+
+    </form>
+
+    <!-- SEARCH + FILTER -->
+
+    <form method="GET" class="form">
+
+        <input id="search"
+            type="text"
+            name="search"
+            placeholder="Search Expense"
+            value="{{ search }}"
+        >
+
+        <select name="category_filter">
+
+            <option value="">All Categories</option>
+
+            <option value="Food"
+            {% if category_filter=="Food" %}
+            selected
+            {% endif %}
+            >
+            Food
+            </option>
+
+            <option value="Travel"
+            {% if category_filter=="Travel" %}
+            selected
+            {% endif %}
+            >
+            Travel
+            </option>
+
+            <option value="Medical"
+            {% if category_filter=="Medical" %}
+            selected
+            {% endif %}
+            >
+            Medical
+            </option>
+
+            <option value="Stationary"
+            {% if category_filter=="Stationary" %}
+            selected
+            {% endif %}
+            >
+            Stationary
+            </option>
+
+        </select>
+
+        <button>Filter</button>
+
+    </form>
+    <!-- SALARY WARNING -->
+
+<form method="GET" class="form">
+
+    <input
+        type="number"
+        name="salary"
+        placeholder="Enter Salary"
+        value="{{ salary }}"
+    >
+
+    <button>
+        Check Limit
+    </button>
+
+</form>
+
+{% if warning %}
+
+<h3 class="warning">
+
+    {{ warning }}
+
+</h3>
+
+{% endif %}
+
+    <!-- TOTAL + CHART -->
+
+    <div class="top-section">
+
+        <div class="total">
+            Total: ₹ {{ total }}
+        </div>
+
+        <div class="chart-box">
+
+            <canvas id="chart"></canvas>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+
+    <table>
+
+        <tr>
+
+            <th>Expense</th>
+
+            <th>Category</th>
+
+            <th>Amount</th>
+
+            <th>Action</th>
+
+        </tr>
+
+        {% for i in data %}
+
+        <tr>
+
+            <td>{{ i[1] }}</td>
+
+            <td>{{ i[2] }}</td>
+
+            <td>₹ {{ i[3] }}</td>
+
+            <td>
+                <!-- DELETE -->
+
+                <form
+                    action="/delete/{{ i[0] }}"
+                    method="POST"
+                    style="display:inline;"
+                >
+
+                    <button type="submit" class="delete" onclick="return confirm('Are you sure to delete?')">
+                        Delete
+                    </button>
+
+                </form>
+
+                <!-- EDIT -->
+
+                <a
+                    href="/edit/{{ i[0] }}"
+                    class="edit-btn"
+                >
+                    Edit
+                </a>
+
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+<script>
+
+const ctx = document.getElementById('chart');
+
+new Chart(ctx, {
+
+    type: 'pie',
+
+    data: {
+
+        labels: {{ categories | tojson }},
+
+        datasets: [{
+
+    data: {{ amounts | tojson }},
+
+    backgroundColor: [
+
+        "#4CAF50",
+        "#2196F3",
+        "#FF9800",
+        "#E91E63"
+    ],
+
+    borderWidth: 2,
+
+    hoverOffset: 15
+}]
+    },
+
+    options: {
+
+        responsive: true,
+
+       plugins: {
+            legend: {
+
+                position: 'bottom'
+
+            }
+        }
+    }
+});
+
+    let expense=document.getElementById("expense");
+    let amount=document.getElementById("amount");
+    let btn=document.getElementById("btn");
+    btn.addEventListener("click", function(){
+    let valid=expense.value;
+    if(valid.trim() === ""){
+     alert("Enter Expenses")
+     event.preventDefault();
+     return;
+
+    }
+    let validamount=amount.value;
+    if (validamount<=0){
+         alert("Amount Mst be more than Zero")
+         event.preventDefault();
+         return;
+
+    }
+    });
+
+let search = document.getElementById("search");
+
+let rows = document.querySelectorAll("table tr:not(:first-child)");
+
+search.addEventListener("input", function() {
+
+    let keyword = search.value.toLowerCase();
+
+    rows.forEach(function(row) {
+
+        let text = row.innerText.toLowerCase();
+
+        if (text.includes(keyword)) {
+
+            row.style.display = "";
+
+        }
+
+        else {
+
+            row.style.display = "none";
+
+        }
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
